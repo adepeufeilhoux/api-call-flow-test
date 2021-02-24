@@ -1,0 +1,64 @@
+# This workflow generates documentation in PDF and HTML formats
+
+name: generate diagrams
+
+on:
+  push:
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    env:
+        UML_FILES: ".puml"
+
+    steps:
+      - name: check out puml sources
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 2     
+      - name: Get changed UML files
+        id: getfile
+        run: |
+          echo "::set-output name=files::$(git ls-tree -r --name-only HEAD | grep ${{ env.UML_FILES }} | xargs)" 
+      - name: UML files considered
+        run: |
+          echo ${{ steps.getfile.outputs.files }}
+      - name: Generate SVG Diagrams
+        uses: cloudbees/plantuml-github-action@master
+        if: steps.getfile.outputs.files != ''
+        with:
+            args: -v -tsvg ${{ steps.getfile.outputs.files }}
+      - name: Build AsciiDoc
+        id: documents
+        uses: Analog-inc/asciidoctor-action@master
+        with:
+          shellcommand: "chmod -R 777 ./render.sh && ./render.sh render_pdf"
+      - name: Save AsciiDoc step
+        uses: actions/upload-artifact@v1
+        with:
+          name: Docs
+          path: ./out/          
+ 
+# Deploys the generated html to Github pages 
+  publish:
+    runs-on: ubuntu-latest
+    needs: [generate]
+    steps:
+      - name: Download Artifacts
+        uses: actions/download-artifact@master
+        with:
+          name: Docs
+          path: ./out/
+
+      - name: Check GitHub Pages status
+        uses: crazy-max/ghaction-github-status@v2
+        with:
+          pages_threshold: major_outage
+
+      - name: Publish generated content to GitHub Pages
+        uses: crazy-max/ghaction-github-pages@v2
+        with:
+          build_dir: out/html
+          branch: gh-pages
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,0 +1,22 @@
+== UC005: Setting up billing
+
+=== Screen flow
+// image:uc1.png[]
+
+=== Description
+
+* Step 0
+
+
+
+=== API call flow
+==== Approach A (SoE steer the process)
+
+// image:UC1-A-CreateParty.svg[]
+
+==== Approach B (SoR steer the process)
+
+// image:UC1-B-CreateParty.svg[]
+
+
+

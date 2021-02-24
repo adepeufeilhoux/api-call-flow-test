@@ -1,0 +1,42 @@
+
+@startuml
+skinparam ParticipantFontColor automatic
+Title: Order Capture 3
+autonumber 26
+actor person
+participant EngagementManagement #Purple
+participant OrderCapture #Black
+database Catalog
+
+activate OrderCapture
+== get user pricing approval ==
+EngagementManagement -> ProductOrder : GET ShoppingCart7
+activate ProductOrder
+ProductOrder--> EngagementManagement : 200 - ShoppingCart7
+deactivate ProductOrder
+EngagementManagement->EngagementManagement : Display cart tariff 
+person--> EngagementManagement :  confirm approval for pricing
+Note over OrderCapture : At this point the shopping cart is not anymore used\nshift to product Order entity
+EngagementManagement-> OrderCapture : PATCH SessionId, ProcessId4, TaskId4 Validate Tarif OK
+activate EngagementManagement
+OrderCapture --> ProductOrder : PATCH ShoppingCart/7 (change status to ordered)
+activate ProductOrder
+ProductOrder --> OrderCapture : 201 - updated
+deactivate ProductOrder
+OrderCapture --> ProductOrder : POST ProductOrder (from shoppingCart7)
+activate ProductOrder
+ProductOrder --> OrderCapture : 201 - ProductOrder 77 created
+deactivate ProductOrder
+
+== Complete order with all required information (party, address, appointment, BA, payment, proof, etc. ) ==
+
+Note over OrderCapture : required information for each productOffering are retrieved in commercial catalog
+OrderCapture --> Catalog : GET productOffering?offeringId25,26,89,74, 12
+Catalog -> OrderCapture : 201 - catalog information for productOffering25,26,89,74, 12
+OrderCapture --> OrderCapture: Identify required information\naddress for 25(POItem1)\nbillingAccount for 26(POItem2)\npayment for 74(POItem 3) & 12(POItem 6)
+OrderCapture -> EngagementManagement: 201 SessionId, ProcessId4, available actions:\nTaskId5 require address for POitem1 [role=instal, addressRefOrValue]\nTaskId8 require contact method [contact Method]\nTaskId99 quit, save
+deactivate EngagementManagement
+Note over OrderCapture : In this example it is up to the engagement management to\nmanage task priority on the UI (all displayed or railroad)
+EngagementManagement->EngagementManagement : Display order completion according\nto data (tasks) to be captured
+@enduml
+

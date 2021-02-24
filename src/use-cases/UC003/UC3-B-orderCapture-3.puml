@@ -1,0 +1,43 @@
+@startuml
+skinparam ParticipantFontColor automatic
+Title: Order Capture 4
+autonumber 40
+actor person
+participant EngagementManagement #Purple
+participant OrderCapture #Black
+participant PartyManagement #Red
+database ProductOrder
+database Installedbase
+
+activate EngagementManagement
+== Add an installation address   ==
+person -> EngagementManagement : same address than the one\nused for the qualification 
+
+== Add contact Medium   ==
+person-> EngagementManagement: provide contactMethod
+
+== Send information to the process ==
+EngagementManagement -> OrderCapture : PATCH SessionId, process4, taskid5 [role=instal,addressId9]
+activate OrderCapture
+OrderCapture -> OrderCapture :check addressId9/n (internal or TMF679)
+OrderCapture --> EngagementManagement: 01 SessionId, ProcessId4, available actions:\nTaskId8 require contact method [contact Method]\nTaskId99 quit, save
+deactivate EngagementManagement
+
+OrderCapture -> ProductOrder: PATCH ProductOrder/77 (addressId9 - install - item1)
+activate ProductOrder
+ProductOrder -> Installedbase : PATCH product1
+ProductOrder --> OrderCapture : 201 ProductOrder 77 updated
+deactivate ProductOrder
+
+EngagementManagement -> OrderCapture : PATCH SessionId, process4, taskid8 [email - used for Order contact method + party contact method]
+activate EngagementManagement
+OrderCapture -> ProductOrder:  PATCH ProductOrder/7 (contactMethod: email)
+activate ProductOrder
+ProductOrder --> OrderCapture : 201 
+deactivate ProductOrder
+OrderCapture -> PartyManagement:  POST ProcessFlow - PFspec: Party update (party8 (email)\n alternativly could be triggered via an event.
+OrderCapture --> EngagementManagement : 201 SessionId, ProcessId4, available actions:\nTaskId6 require billingAccount for item3[BAid]\nTaskId7 require payment for item5&6[PaymentId]
+deactivate EngagementManagement
+== Payment & Account not displayed ==
+@enduml
+

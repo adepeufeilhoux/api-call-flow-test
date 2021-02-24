@@ -1,0 +1,44 @@
+@startuml
+skinparam ParticipantFontColor automatic
+Title: Order Capture 2
+autonumber 13
+actor person
+participant EngagementManagement #Purple
+participant OrderCapture #Black
+participant CPQManagement #Black
+database ProductOrder
+database Installedbase
+
+activate OrderCapture
+== Cart configuration ==
+EngagementManagement -> CPQManagement : GET Configuration/configuration9 
+activate EngagementManagement
+activate CPQManagement
+CPQManagement--> EngagementManagement : 200, actions possibles for configuration9 + pricing information
+EngagementManagement->EngagementManagement : display Configuration UI
+loop Till configuration OK and 'next step' clicked
+note over OrderCapture : engagement is dealing directly with configurator API
+person--> EngagementManagement :  configure item (or click on 'next step' )
+alt If configuration change
+EngagementManagement -> CPQManagement : PATCH Configuration (configuration9, offeringId\ncharacteristic, relation)
+CPQManagement--> EngagementManagement : actions possibles for configuration + pricing information
+end
+end
+deactivate CPQManagement
+deactivate EngagementManagement
+EngagementManagement-> OrderCapture : PATCH SessionId, ProcessId4, TaskId2, [cartItemsConfigured],\nconfiguration9
+activate EngagementManagement
+Note over OrderCapture : here we check configuration by retrieving the configuration itself - alternate is to use POQ API
+OrderCapture --> CPQManagement: GET Configuration/9?fields=status
+activate CPQManagement
+CPQManagement -> OrderCapture: 200 - Valid
+deactivate CPQManagement
+OrderCapture --> EngagementManagement : 201 SessionId, ProcessId4, available actions:\nTaskId4 Validate Tarif [shoppingCart7] \n TaskId99 quit
+deactivate EngagementManagement
+OrderCapture-> ProductOrder: PATCH ShoppingCart/7 (cartItemsConfigured)
+activate ProductOrder
+ProductOrder -> Installedbase : optional (could be done later)\nPOST/PATCH product
+ProductOrder --> OrderCapture : 201 ShoppingCart 7 updated
+deactivate ProductOrder
+@enduml
+

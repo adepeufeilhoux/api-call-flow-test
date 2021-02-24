@@ -1,0 +1,34 @@
+@startuml
+skinparam ParticipantFontColor automatic
+Title: Order Capture 5
+autonumber 53
+actor person
+participant EngagementManagement #Purple
+participant OrderCapture #Black
+database ProductOrder
+database Installedbase
+
+activate OrderCapture
+== Payment & Account not displayed ==
+EngagementManagement -> OrderCapture: Payment info (not detailled (666 & 676)
+activate EngagementManagement
+
+== Order completion validation ==
+OrderCapture --> EngagementManagement : 201 SessionId, ProcessId4, available actions:\nTaskId9 require order completion confirmation
+deactivate EngagementManagement
+EngagementManagement -> EngagementManagement: display order completion form\n and request confirmation
+person-> EngagementManagement: click on confirm
+EngagementManagement --> OrderCapture : PATCH SessionId, process4, taskid9 [Confirmed]
+activate EngagementManagement
+== Order Validation ==
+OrderCapture --> EngagementManagement : 201 SessionId, ProcessId4, available actions:\nTaskId10 require order confirmation
+deactivate EngagementManagement
+EngagementManagement -> EngagementManagement: display final order confirmation form
+person-> EngagementManagement: click on confirm your order
+EngagementManagement --> OrderCapture : PATCH SessionId, process4, taskid10 [Confirmed]
+activate EngagementManagement
+OrderCapture --> ProductOrder : PATCH ProductOrder/7 to change the status to 'validated'* (* not a std status)
+Note over OrderCapture: Order capture trigger a welcome process to continue the interaction flow with EngagementManagement
+deactivate OrderCapture
+
+@enduml

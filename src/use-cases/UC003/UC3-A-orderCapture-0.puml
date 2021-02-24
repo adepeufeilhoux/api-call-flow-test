@@ -1,0 +1,45 @@
+@startuml
+
+autonumber
+skinparam ParticipantFontColor automatic
+
+actor Customer
+participant "EngagementManagement \nWeb UI" as UI #Purple
+participant "EngagementManagement \nBFF" as BFF #Purple
+participant "Shopping Cart \nComponent" as ShC #Black   
+participant "Service Qualification \nComponent" as SQ #MediumBlue
+participant "Product Offering Qualification \nComponent" as POQ #Black 
+participant "Product Catalog Management \nComponent" as PCM #Black
+participant "Product Ordering \nComponent" as PO #Black
+participant "Party Management \nComponent" as PtyM #Red
+participant "Customer Management \nComponent" as CM #Red
+participant "Account Management \nComponent" as AM #Red
+
+
+== Cart initialization ==
+
+Customer -> UI: select an offer (Fiber Contract 1)
+note over Customer #000001C: <img select_offer.png>
+activate UI
+    UI -> BFF: create Shopping Cart (serviceSpecId, offerId, partyId)
+    activate BFF
+        BFF -> ShC: <font color=blue>TMF663 POST /shoppingCart</font> (offerId, serviceSpecId, partyId)
+            note over ShC: Check that the service and selected offer are eligible \nbefore placing them into the Shopping Cart
+            activate ShC
+            ShC -> SQ: <font color=blue>TMF645 POST /serviceQualification </font> (serviceSpecId, address)
+            activate SQ
+            SQ --> ShC: 201 Service eligible for the specified address
+            deactivate SQ
+            ShC -> POQ: <font color=blue>TMF679 POST /productOfferingQualification</font> (offerId, partyId, context)
+            activate POQ
+            POQ --> ShC: Product Offer eligible for the specified address
+            deactivate POQ
+            ShC -> ShC: validate
+            ShC -> ShC: create Shopping Cart
+        ShC --> BFF: 201 Shopping Cart
+        deactivate ShC
+    BFF --> UI: Shopping Cart
+    deactivate BFF
+UI --> Customer: update Shopping Cart icon 
+note over Customer #000001C: <img shopping_cart_with_items.png>   
+@enduml

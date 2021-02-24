@@ -1,0 +1,22 @@
+@startuml
+skinparam ParticipantFontColor automatic
+Title: Party "Party creation - Step 0" creation
+autonumber
+actor person
+participant EngagementManagement #Purple
+participant Welcome #Red
+
+== new Interaction from engagement management   ==
+person -> EngagementManagement: Launch Service Provider website or apps
+activate Welcome
+
+EngagementManagement -> Welcome: TMF701 POST new session started, SessionId, Welcome process
+activate EngagementManagement
+Welcome --> EngagementManagement: 201 SessionId, ProcessId, TaskId, available actions: Identify yourself, \nCreate your Account, Browse B2C Catalogue, Read News
+deactivate EngagementManagement
+
+EngagementManagement -> EngagementManagement: Display available actions
+person -> EngagementManagement: Choose Create your Account
+EngagementManagement ->Welcome: TMF701 PATCH SessionId, ProcessId, TaskId, Create your Account chosen
+activate EngagementManagement
+@enduml

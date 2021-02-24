@@ -1,0 +1,41 @@
+
+@startuml
+skinparam ParticipantFontColor automatic
+Title: Stock-based delivery
+autonumber 35
+participant CustomerOrderDelivery #Black
+participant ProductCatalog #Black
+participant SupplyChain #Navy
+participant EventBus #Grey
+participant CustomerOrderFollowUp #Black
+database ProductOrder
+database Installedbase
+
+== Stock-based Delivery==
+activate CustomerOrderDelivery
+group For stock-based product (Repeated for each Product requiring by a goods delivering)
+CustomerOrderDelivery --> CustomerOrderDelivery: Define product to be delivered
+CustomerOrderDelivery --> SupplyChain: POST Product Order (@type = Stock Order)\nuse of simplified ProductOrder [622]
+activate SupplyChain
+SupplyChain -> CustomerOrderDelivery : 201 - Product Order (@type = Stock Order)created
+SupplyChain --> SupplyChain : Determine resource to be delivered 
+SupplyChain --> LogisticPartner : POST ShippingOrder [711 wip]
+Note left of ProductOrder : Management of shippingOrder (and event) not described
+deactivate SupplyChain
+CustomerOrderDelivery --> Installedbase: PATCH Product (state update) [637]
+CustomerOrderDelivery --> ProductOrder: PATCH ProductOrder (state item update) [622]
+Note left of ProductOrder : ProductOrder computes productOrder state accordingly to orderItem state
+deactivate CustomerOrderDelivery
+end
+
+== Later....==
+SupplyChain -> EventBus : POST Event (ProductOrderStateChangeEvent) [688]\n Shipping Order completed
+EventBus --> CustomerOrderDelivery:  POST /listener/productOrderItemStateChangeEvent
+activate CustomerOrderDelivery
+CustomerOrderDelivery --> CustomerOrderDelivery : update delivery flow
+CustomerOrderDelivery --> Installedbase: PATCH Product (state update) [637]
+CustomerOrderDelivery --> ProductOrder: PATCH ProductOrder (state item update) [622]
+Note Right of CustomerOrderDelivery: Back to global flow view
+deactivate CustomerOrderDelivery
+
+@enduml

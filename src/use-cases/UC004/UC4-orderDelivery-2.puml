@@ -1,0 +1,39 @@
+
+@startuml
+skinparam ParticipantFontColor automatic
+Title: Zoom on order follow-up
+autonumber 25
+participant CustomerOrderFollowUp #Black
+participant PartyInteractionMngt #Red
+participant PartyManagement #Red
+participant EventBus #Grey
+database ProductOrder
+database PartyInteractionBase
+
+group for every productOrder/productOrderItem change
+activate CustomerOrderFollowUp
+EventBus --> CustomerOrderFollowUp: POST /listener/TaskFlowStateChange\nstate='Completed',PFSpec='CustomerOrderDelivery'
+EventBus --> CustomerOrderFollowUp: POST /listener/ProcessFlowStateChange\nstate='Completed',PFSpec='CustomerOrderDelivery'
+CustomerOrderFollowUp --> CustomerOrderFollowUp: Compute Product order state
+alt ProductOrder state shifted to completed
+CustomerOrderFollowUp --> ProductOrder: PATCH ProductOrder (state update) [622]
+note over CustomerOrderFollowUp: Order follow-up detects a communication must be sent to customer
+CustomerOrderFollowUp --> PartyInteractionMngt: POST ProcessFlow (PFSpec=manageCommunication +\nCommunicateOrderDeliveryCompletion+productOrderId\n+party.id) [701]
+activate PartyInteractionMngt
+PartyInteractionMngt -> CustomerOrderFollowUp : 201 ProcessFlow created
+PartyInteractionMngt -> PartyManagement : GET party/{id}?fields=contactMedium [632]
+PartyManagement --> PartyInteractionMngt : party contact medium information
+PartyInteractionMngt -> PartyInteractionMngt : determine prefered customer contact\nor retrieve from order
+PartyInteractionMngt -> CommunicationServer: POST CommunicationMessage (receiver method, content) [681]
+CommunicationServer --> PartyInteractionMngt : 201 (communication sent)
+PartyInteractionMngt --> PartyInteractionBase : POST PartyInteraction [683]
+PartyInteractionMngt --> EventBus: POST Event (ProcessFlowStateChange\nstate='Completed',PFSpec='ManageCommunication') [688]
+deactivate PartyInteractionMngt
+EventBus --> CustomerOrderFollowUp: POST /listener/ProcessFlowStateChange\nstate='Completed',PFSpec='ManageCommunication')
+CustomerOrderFollowUp --> EventBus : POST Event (ProcessFlowStateChange\nstate='Completed',PFSpec='CustomerOrderFollowUp') [688]
+deactivate CustomerOrderFollowUp
+end
+end
+
+
+@enduml

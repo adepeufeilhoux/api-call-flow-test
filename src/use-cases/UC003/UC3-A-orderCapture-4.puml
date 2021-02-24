@@ -1,0 +1,34 @@
+@startuml
+
+autonumber
+skinparam ParticipantFontColor automatic
+
+actor Customer
+participant "EngagementManagement \nWeb UI" as UI #Purple
+participant "EngagementManagement \nBFF" as BFF #Purple
+participant "Shopping Cart \nComponent" as ShC #Black   
+participant "Service Qualification \nComponent" as SQ #MediumBlue
+participant "Product Offering Qualification \nComponent" as POQ #Black 
+participant "Product Catalog Management \nComponent" as PCM #Black
+participant "Product Ordering \nComponent" as PO #Black
+participant "Party Management \nComponent" as PtyM #Red
+participant "Customer Management \nComponent" as CM #Red
+participant "Account Management \nComponent" as AM #Red
+
+== Order confirmation ==
+note over Customer #000001C: <img order_confirmation.png>  
+Customer -> UI: confirm your order
+activate UI
+    UI -> BFF: confirm Product Order (orderId)
+    activate BFF
+        BFF -> PO: PO: <font color=blue>TMF622 PATCH /productOrder</font> (orderId, state="acknowledged") 
+        activate PO
+        PO --> BFF: 200 Ok
+        deactivate PO
+        note over PO: Start async order processing (validation, gathering extra information, promoting the state etc)
+    BFF --> UI
+    deactivate BFF
+UI --> Customer
+deactivate UI        
+
+@enduml

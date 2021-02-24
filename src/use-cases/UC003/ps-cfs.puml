@@ -1,0 +1,56 @@
+@startuml PS-CFS
+
+skinparam object {
+    BorderThickness<<Product Spec>> 1
+    BorderColor<<Product Spec>> Green
+    BackgroundColor<<Product Spec>> Gold
+
+    BackgroundColor<<Resource Spec>> Aqua
+    BorderColor<<Resource Spec>> Red
+    BorderThickness<<Resource Spec>> 1
+
+    BackgroundColor<<CFS>> Lime
+    BorderColor<<CFS>> Black
+    BorderThickness<<CFS>> 1
+}
+
+note "TV Channels Product configurable with 2 possible values\nFiber Access Product defined with no configuration choice except geographic address" as N1
+
+object Box1 <<Product Spec>>
+object Box2 <<Product Spec>>
+object FiberAccess <<Product Spec>>
+object Connectivity <<Product Spec>>
+object TVChannels <<Product Spec>>
+
+object FiberFixedAccess_L2 <<CFS>>
+object FixedConnectivity_L3 <<CFS>>
+object TVChannels_soft <<CFS>>
+
+object BOX_1 <<Resource Spec>>
+object BOX_2 <<Resource Spec>>
+
+Box1 -d-> BOX_1
+Box2 -d-> BOX_2
+FiberAccess --> FiberFixedAccess_L2
+Connectivity --> FiberAccess : requires
+Connectivity --> FixedConnectivity_L3
+Connectivity --> Box1
+note on link : "OR" 
+
+Connectivity --> Box2
+
+FixedConnectivity_L3 --> FiberFixedAccess_L2
+TVChannels --> Connectivity : requires
+TVChannels --> TVChannels_soft : requires
+TVChannels_soft --> FixedConnectivity_L3 : requires
+
+FixedConnectivity_L3 --> BOX_1
+note on link : "OR" 
+FixedConnectivity_L3 --> BOX_2
+
+
+FiberAccess : Speed = XXX
+FiberAccess : Address = XXXX
+TVChannels : Type = "[ Basic | Extra ]"
+
+@enduml

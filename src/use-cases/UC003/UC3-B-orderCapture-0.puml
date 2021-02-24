@@ -1,0 +1,42 @@
+@startuml
+skinparam ParticipantFontColor automatic
+Title: Order Capture
+autonumber
+actor person
+participant EngagementManagement #Purple
+participant Welcome #Red
+participant OrderCapture #Black
+participant TechnicalEligibility #MediumBlue
+participant CPQManagement #Black
+database ProductOrder
+database Catalog
+database Installedbase
+
+== Order Capture Initialization from previous interaction==
+activate Welcome
+person -> EngagementManagement: select an offer
+EngagementManagement -> Welcome:  TMF701 PATCH SessionId, processId3\n, taskId2 (start order), offering25, addressId9, partyId8,\nserviceQualificationId11
+activate EngagementManagement
+Note over OrderCapture: we assume the story is following 2 previous UC
+Welcome -> OrderCapture : TMF 701 POST sessionId, offeringId25,\nserviceQualificationId11\n, addressId9, partyId8, sc
+activate OrderCapture
+group Check data consistency 
+Note over OrderCapture: Process describes if new SQ requires (via POST) or just check previous one (if provided)
+OrderCapture -> TechnicalEligibility: GET serviceQualification/serviceQualificationId11?\nfields=qualificationResult (or POST SQ) (TMF645)
+TechnicalEligibility --> OrderCapture : 200 - green
+OrderCapture -> CPQManagement : POST configuration (offeringId25, partyId8, sc)\n(xxx)
+activate CPQManagement
+note over CPQManagement: as of today no 'configuration' API
+CPQManagement --> OrderCapture: 200 - green - configurationId9 created (offeringId25,26,89)
+deactivate CPQManagement
+end
+OrderCapture --> Welcome: 201 SessionId, ProcessId4, available actions:\nTaskId2 Configure cart[configurationId9],\n TaskId99 quit
+Welcome-->EngagementManagement: 201 SessionId, ProcessId, available actions:\nTaskId2 Configure cart[configurationId9],\n TaskId99 quit
+deactivate Welcome
+deactivate EngagementManagement
+OrderCapture-> ProductOrder: POST ShoppingCart (offeringId25,26,89 partyId8)\n(663)
+activate ProductOrder
+ProductOrder -> Installedbase : optional (could be done later)\POST product (637)
+ProductOrder --> OrderCapture : 201 ShoppingCart 7 created
+deactivate ProductOrder
+@enduml

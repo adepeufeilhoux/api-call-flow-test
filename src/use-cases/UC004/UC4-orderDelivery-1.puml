@@ -1,0 +1,40 @@
+
+@startuml
+skinparam ParticipantFontColor automatic
+Title: CFS-based delivery
+autonumber 13
+participant CustomerOrderDelivery #Black
+participant ServiceOrderDelivery #Navy
+participant CustomerOrderFollowUp #Black
+participant EventBus #Grey
+database ProductOrder
+database Installedbase
+
+== CFS-based Delivery==
+activate CustomerOrderDelivery
+group For CFS-based product (Repeated for each Product delivered by CFS Spec)
+CustomerOrderDelivery --> CustomerOrderDelivery: Define service to be instanciated
+CustomerOrderDelivery --> ServiceOrderDelivery: POST Service Order [641]
+activate ServiceOrderDelivery
+Note over ServiceOrderDelivery : For each Service Order a corresponding result of Service Qualification \nfrom previous steps has to be submitted as well. \nServiceOrderDelivery uses it to check eligibility of the requested service.
+ServiceOrderDelivery -> CustomerOrderDelivery : 201 - Service Order created
+Note over ServiceOrderDelivery : Service delivery not performed on the fly
+deactivate ServiceOrderDelivery
+CustomerOrderDelivery --> Installedbase: PATCH Product (state update) [637]
+CustomerOrderDelivery --> ProductOrder: PATCH ProductOrder (state item update) [622]
+deactivate CustomerOrderDelivery
+end
+
+== Later....==
+ServiceOrderDelivery -> EventBus : POST event\n(service order item state change) [688]
+EventBus --> CustomerOrderDelivery:  POST /listener/serviceOrderItemStateChangeEvent\n(serviceOrderId representation)
+activate CustomerOrderDelivery
+CustomerOrderDelivery --> CustomerOrderDelivery : update delivery flow
+CustomerOrderDelivery --> Installedbase: PATCH Product (state update) [637]
+CustomerOrderDelivery --> ProductOrder: PATCH ProductOrder (state item update) [622]
+CustomerOrderDelivery --> EventBus : POST Event (TaskFlowStateChange\nstate='Completed',PFSpec='CustomerOrderDelivery')
+alt if all productOrder item delivered
+CustomerOrderDelivery --> EventBus : POST Event (ProcessFlowStateChange\nstate='Completed',PFSpec='CustomerOrderDelivery')
+end
+deactivate CustomerOrderDelivery
+@enduml

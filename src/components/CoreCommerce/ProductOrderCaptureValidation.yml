@@ -1,0 +1,191 @@
+apiVersion: oda.tmforum.org/productOrderCaptureValidation
+kind: componentSpecification
+metadata:
+  name: oda.tmforum.org/productOrderCaptureValidationSpecification
+  labels:
+    oda.tmforum.org/componentName: productOrderCaptureValidation
+spec:
+  selector:
+    matchLabels:
+     oda.tmforum.org/componentName: productOrderCaptureValidation
+  componentKinds:
+    - group: functionalBlock
+      kind: coreCommerceManagement
+    - group: apps
+      kind: Specification  
+  type: productOrderCaptureValidation  
+  version: "0.0.1"
+  description: "Specification for a Product Order Capture and Validation ODA component with exposed/consumed APIs & events." 
+  maintainers:
+    - name: xxxx
+      email: xxxx
+  owners:
+    - name: xxxx
+      email: xxxx  
+  coreFunction:
+    exposedAPIs: 
+    - name: shoppingCart
+      specification: https://open-api.tmforum.org/TMF663-ShoppingCart-v4.0.0.swagger.json
+      implementation: xxx
+      path: xxx
+      port: xxx
+      scopes:
+        /shoppingCart:
+          get:
+            operationId: listShoppingCart
+          post:
+            operationId: createShoppingCart
+        /shoppingCart{id}:
+          get:
+            operationId: retrieveShoppingCart
+          patch:
+            operationId: patchShoppingCart         
+    - name: processFlow
+      specification: https://open-api.tmforum.org/TMF701-Process_Flow-v4.0.0.swagger.json
+      implementation: xxx
+      path: xxx
+      port: xxx
+      scopes:
+        /processFlow:
+          post:
+            operationId: createProcessFlow
+            parameters:
+            - name: "ProcessFlowSpecification"
+              enum:
+              - "ManageOrderCaptureValidation"
+        /processFlow{id}:
+          get:
+            operationId: retrieveProcessFlow
+            parameters:
+            - name: "ProcessFlowSpecification"
+              enum:
+              - "ManageOrderCaptureValidation"
+        /processFlow/{id}/taskFlow:
+          get:
+            operationId: retrieveTaskFlowList
+          patch:
+            operation: updateTaskFlow 
+        /processFlow{id}/taskFlow{id}:
+          get:
+            operationId: retrieveTaskFlow
+    dependantAPIs: 
+    - name: serviceQualification      
+      specification: https://open-api.tmforum.org/TMF645-Service_qualification.swagger.json
+      scopes:
+        /checkServiceQualification:
+          post:
+            operation: createServiceQualification
+        /checkServiceQualification{id]}:
+          get:
+            operation: retrieveServiceQualification           
+    - name: productOfferingQualification
+      specification: https://open-api.tmforum.org/TMF679-Product_Offering_Qualification-v4.0.0.swagger.json
+    - name: productInventory
+      specification: https://open-api.tmforum.org/TMF637-Product_Inventory-v4.0.0.swagger.json
+      scopes:
+        /product:
+          get:
+            operation: listProduct
+        /product{id}:
+          get:
+            operation: retrieveProduct
+    - name: productOrder
+      specification: https://open-api.tmforum.org/TMF622-Product_Ordering-v4.0.0.swagger.json
+      scopes:
+        /productOrder:
+          post:
+            operation: createProductOrder
+    - name: productCatalog
+      specification: https://open-api.tmforum.org/TMF620-Product_Catalog-v4.0.0.swagger.json
+      scopes:
+        /productCategory:
+          get:
+        /productCategory{id]}:
+          get:  
+        /productSpecification:
+          get:
+        /productSpecification{id]}:
+          get:
+        /productOffering:
+          get:
+        /productOffering{id]}:
+          get:  
+        /productOfferingPrice:
+          get:
+        /productOfferingPrice{id]}:
+          get:                  
+    - name: productFlow
+      specification: https://open-api.tmforum.org/TMF701-Process_Flow-v4.0.0.swagger.json
+      scopes:
+        post:
+          operation: createProcessFlow
+          parameters:
+            - name: "ProcessFlowSpecification"
+              enum:
+              - "ManageAppointment"
+              - "ManageParty"
+              - "ManageAccount"
+    - name: event
+      specification: https://open-api.tmforum.org/TMF688-Event-v4.0.0.swagger.json
+      scopes:
+        /event:
+          post:
+            operation: createEvent
+    - name: userRolePermission
+      specification: https://open-api.tmforum.org/TMF672-UserRolePermission-v4.0.0.swagger.json
+      scopes:
+        /permission:
+          get:
+            operation: listPermission
+        /permission{id}:
+          get:
+            operation: retrievePermission            
+  eventNotification:
+    publishedEvents:
+    - name: shoppingCartCreateEvent
+      href: https://schema.tmforum.org/Common/Event.schema.json
+    - name: shoppingCartAttributeValueChangeEvent
+      href: https://schema.tmforum.org/Common/Event.schema.json
+    - name: shoppingCartDeleteEvent
+      href: https://schema.tmforum.org/Common/Event.schema.json
+    - name: processFlowCreateEvent
+      href: https://schema.tmforum.org/Common/Event.schema.json
+    - name: processFlowDeleteEvent
+      href: https://schema.tmforum.org/Common/Event.schema.json
+    - name: processFlowAttributeValueChangeEvent
+      href: https://schema.tmforum.org/Common/Event.schema.json
+    - name: processFlowStateChangeEvent
+      href: https://schema.tmforum.org/Common/Event.schema.json
+    - name: taskFlowCreateEvent
+      href: https://schema.tmforum.org/Common/Event.schema.json
+    - name: taskFlowDeleteEvent
+      href: https://schema.tmforum.org/Common/Event.schema.json
+    - name: taskFlowAttributeValueChangeEvent
+      href: https://schema.tmforum.org/Common/Event.schema.json
+    - name: taskFlowStateChangeEvent
+      href: https://schema.tmforum.org/Common/Event.schema.json
+    - name: taskFlowStateInformationRequiredEvent
+      href: https://schema.tmforum.org/Common/Event.schema.json
+    subscribedEvents:
+    - name: processFlowStateChangeEvent 
+      href: https://schema.tmforum.org/Common/Event.schema.json
+    - name: individualCreateEvent  
+      href: https://schema.tmforum.org/Common/Event.schema.json
+    - name: individualStateChangeEvent  
+      href: https://schema.tmforum.org/Common/Event.schema.json 
+    - name: organizationCreateEvent  
+      href: https://schema.tmforum.org/Common/Event.schema.json
+    - name: organizationStateChangeEvent  
+      href: https://schema.tmforum.org/Common/Event.schema.json
+    - name: billingAccountCreateEvent  
+      href: https://schema.tmforum.org/Common/Event.schema.json
+    - name: billingAccountStateChangeEvent  
+      href: https://schema.tmforum.org/Common/Event.schema.json
+    - name: appointmentCreateEvent  
+      href: https://schema.tmforum.org/Common/Event.schema.json
+    - name: appointmentStateChangeEvent  
+      href: https://schema.tmforum.org/Common/Event.schema.json
+  management:
+  - name: healthCheck
+    href: https://manager.local/healthCheck
+    specification: https://open-api.tmforum.org/TMF653-ServiceTest-v4.0.0.swagger.json

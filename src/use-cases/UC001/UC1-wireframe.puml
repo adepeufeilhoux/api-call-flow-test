@@ -1,0 +1,41 @@
+@startuml
+(*) -right-> "
+{{
+salt
+{
+    
+    <b>Welcome
+    [<color:red>No account yet?]
+}
+}}
+" as Welcome
+
+Welcome -right-> "
+{{
+salt
+{
+    <b>Create your account
+    { (X) Mr. | () Mrs }
+    Firstname |  "<color:red>James       "
+    Lastname |  "<color:red>Bond        "
+    Login (email address) | "<color:red>james@mi6.uk"
+    Password | "<color:red>* * * * *   "
+    [<color:red>Create your account]
+}
+}}
+" as AccountCreationForm
+
+AccountCreationForm -right-> "
+{{
+salt
+{
+    <b>Success
+    Your account has been successfully created
+    [<color:red>Go to welcome]
+}
+}}
+" as Confirmation
+
+Confirmation -right-> (*)
+
+@enduml

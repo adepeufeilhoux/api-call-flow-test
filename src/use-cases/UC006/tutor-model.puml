@@ -1,0 +1,32 @@
+@startuml
+
+
+
+entity steffi <<Individual>> {
+    name: Steffi
+} 
+
+entity hans <<Individual>> {
+}
+
+
+entity steffiAsTutorOfHans <<PartyRole>> {
+}
+
+entity tutorRoleSpec <<PartyRoleSpecification>> {
+    name = Tutor
+}
+
+object partyRoleSpec <<PartyRoleSpecificationRef>>
+object engagedParty <<RelatedParty>> {
+    @referredType = Individual
+    id = steffi
+}
+
+steffiAsTutorOfHans *-- engagedParty 
+steffiAsTutorOfHans *-- partyRoleSpec 
+
+engagedParty -- steffi
+
+
+@enduml

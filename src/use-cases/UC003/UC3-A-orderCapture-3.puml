@@ -1,0 +1,56 @@
+@startuml
+
+autonumber
+skinparam ParticipantFontColor automatic
+
+actor Customer
+participant "EngagementManagement \nWeb UI" as UI #Purple
+participant "EngagementManagement \nBFF" as BFF #Purple
+participant "Shopping Cart \nComponent" as ShC #Black   
+participant "Service Qualification \nComponent" as SQ #MediumBlue
+participant "Product Offering Qualification \nComponent" as POQ #Black 
+participant "Product Catalog Management \nComponent" as PCM #Black
+participant "Product Ordering \nComponent" as PO #Black
+participant "Party Management \nComponent" as PtyM #Red
+participant "Customer Management \nComponent" as CM #Red
+participant "Account Management \nComponent" as AM #Red
+
+== Order completion ==
+note over Customer #000001C: <img contact_data_page.png>   
+Customer -> UI: Contract data
+activate UI
+    UI -> BFF: create Product Order
+    activate BFF
+        BFF -> PtyM: <font color=blue>TMF632 PATCH /individual</font> (partyId, address, contactMethod)
+        activate PtyM
+        PtyM --> BFF: 200 Ok
+        deactivate PtyM
+        BFF -> CM: <font color=blue>TMF629 POST /customer</font> (partyId)
+        activate CM
+        CM --> BFF: 201 Customer
+        deactivate CM
+        BFF -> AM: <font color=blue>TMF 666 POST /billingAccount</font> (partyId)
+        activate AM
+        AM --> BFF: 201 Billing Account
+        deactivate AM
+        BFF -> ShC: <font color=blue>TMF663 PATCH /shoppingCart</font> (state="checked-out")
+        activate ShC
+        ShC --> BFF: 200 Shopping Cart
+        deactivate ShC          
+        note over BFF: It might make sense to pass shoppingCartId instead of the list of offers \nto Product Order Component. In this case it can rely on Shooping Cart validity \nand do without validation of offers eligibility and consistency.
+        BFF -> PO: <font color=blue>TMF622 POST /productOrder</font> (customerId, billingAccountId, offers, state="draft")
+        activate PO
+            PO -> POQ: <font color=blue>TMF679 POST /productOfferingQualification</font> (offers, partyId, context)
+            activate POQ
+            POQ --> PO: List of eligible Product Offers
+            deactivate POQ
+            PO -> PO: validate
+            PO -> PO: create Product Order
+        PO --> BFF: 201 Product Order
+        deactivate PO
+    BFF --> UI: Product Order
+    deactivate BFF
+UI --> Customer: show Order confirmation page
+deactivate UI
+
+@enduml

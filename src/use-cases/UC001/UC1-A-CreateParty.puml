@@ -1,0 +1,66 @@
+@startuml
+skinparam ParticipantFontColor automatic
+actor Customer
+
+autonumber
+
+participant "EngagementManagement \nWeb UI" as EngagementManagementUI #Purple
+participant "EngagementManagement \nBFF" as EngagementManagementBFF #Purple
+
+Customer -> EngagementManagementUI: access web app
+activate EngagementManagementUI
+        EngagementManagementUI -> EngagementManagementBFF: get available actions
+        activate EngagementManagementBFF
+        EngagementManagementBFF --> EngagementManagementUI: available actions
+        deactivate EngagementManagementBFF
+EngagementManagementUI --> Customer: present available actions
+deactivate EngagementManagementUI
+
+Customer -> EngagementManagementUI: create new account
+activate EngagementManagementUI
+    EngagementManagementUI -> EngagementManagementBFF: create new account
+    activate EngagementManagementBFF
+    EngagementManagementBFF --> EngagementManagementUI: provide account details
+    deactivate EngagementManagementBFF
+EngagementManagementUI --> Customer: present account creation form
+deactivate EngagementManagementUI
+
+Customer -> EngagementManagementUI: enter account details \n(firstName, lastName, contactMethod, \nlogin, password, \naddress)
+activate EngagementManagementUI
+    EngagementManagementUI -> EngagementManagementBFF: submit account details \n(firstName, lastName, contactMethod, \nlogin, password, \naddress)
+    activate EngagementManagementBFF
+        EngagementManagementBFF -> EngagementManagementBFF: validate input data
+        activate EngagementManagementBFF
+        deactivate EngagementManagementBFF
+
+participant "Party Management \nComponent" as PartyManagement #Red
+
+        EngagementManagementBFF -> PartyManagement: <font color=blue> TMF632 POST /individual </font> (firstName, lastName, contactMethod, \naddress)
+        activate PartyManagement
+            PartyManagement -> PartyManagement: create individual with contact method
+            activate PartyManagement
+            deactivate PartyManagement
+        PartyManagement --> EngagementManagementBFF: 201 individual.id
+        deactivate PartyManagement
+
+participant "Identity Management \nComponent" as IdentityManagement #Red
+
+    EngagementManagementBFF -> IdentityManagement: <font color=blue> TMFXXX POST /identity </font> (login, password)
+    activate IdentityManagement
+        IdentityManagement -> IdentityManagement: create identity
+        activate IdentityManagement
+        deactivate IdentityManagement
+    IdentityManagement --> EngagementManagementBFF: 201 identity.id
+    deactivate IdentityManagement
+
+    EngagementManagementBFF -> PartyManagement: <font color=blue> TMF632 PATCH/individual </font> (create RelatedParty reference with id=identity.id \nand role='portal user')
+    activate PartyManagement
+    PartyManagement --> EngagementManagementBFF: 201 individual.id
+    deactivate PartyManagement
+
+    EngagementManagementBFF --> EngagementManagementUI  : 201 individual.id
+    deactivate EngagementManagementBFF
+EngagementManagementUI --> Customer: 201 individual.id
+deactivate EngagementManagementUI
+
+@enduml

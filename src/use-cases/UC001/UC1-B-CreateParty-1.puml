@@ -1,0 +1,26 @@
+@startuml
+skinparam ParticipantFontColor automatic
+Title: Party "Party creation -  Step 1" creation
+autonumber 6
+actor person
+participant EngagementManagement #Purple
+participant Welcome #Red
+participant PartyManagement #Red
+
+== Creation of initialized Party (part I)==
+EngagementManagement ->Welcome: //TMF701 PATCH SessionId, ProcessId, TaskId, Create your Account chosen//
+activate Welcome
+activate EngagementManagement
+Welcome -> PartyManagement: TMF701 POST SessionId, ProcessId,\nTaskId10, create initialized party
+activate PartyManagement
+
+PartyManagement --> Welcome: 201 ProcessId2, TaskId2, \ntask information required, ?firstName, lastName, contactMethod
+Welcome --> EngagementManagement: 200 task information required, SessionId, ProcessId2, TaskId2,  ?firstName, lastName, contactMethod
+deactivate Welcome
+deactivate EngagementManagement
+EngagementManagement -> EngagementManagement: Display required information
+person -> EngagementManagement:Enter required information
+EngagementManagement->PartyManagement: TMF701 PATCH SessionId, ProcessId2, TaskId2, firstName, lastName, contactMethod
+activate EngagementManagement
+
+@enduml

@@ -1,0 +1,111 @@
+@startuml
+skinparam ParticipantFontColor automatic
+Title: Catalog browsing & technical eligibility creation
+autonumber
+actor person
+participant EngagementManagement #Purple
+participant Welcome #Red
+participant CatalogManagement #Black
+Participant RecommendationManagement #DarkGrey
+
+== Catalog browsing & technical eligibility creation - step 0 ==
+activate EngagementManagement
+EngagementManagement -> Welcome:  TMF701 PATCH SessionId, processId3, taskId1, nextAction: Browse B2C Catalogue
+activate Welcome
+Welcome --> EngagementManagement: 200 - ProcessId3, TaskId2, task information required, \navailable actions: Disconnect, Start Order, Browse B2C Catalogue, Read News
+deactivate Welcome
+deactivate EngagementManagement
+
+Group Retrieve productCategory
+    EngagementManagement -> CatalogManagement: TMF 620 GET productCategory
+    activate CatalogManagement
+    activate EngagementManagement
+    CatalogManagement --> EngagementManagement: 200 list of productCategory
+    deactivate CatalogManagement
+    deactivate EngagementManagement
+end
+
+Group Query SofInsight for 'best offers' 
+    EngagementManagement -> RecommendationManagement: TMF 680 POST queryProductRecommendation, (with filter criteria)
+    activate RecommendationManagement
+    activate EngagementManagement
+    RecommendationManagement --> EngagementManagement: 200 list of productCategory/productOffering\nNo resource created
+    deactivate RecommendationManagement
+    deactivate EngagementManagement
+end
+
+EngagementManagement -> EngagementManagement: display category & 'best offers'
+
+@enduml
+
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+@startuml
+skinparam ParticipantFontColor automatic
+Title: Catalog browsing & technical eligibility creation
+autonumber 8
+actor person
+participant EngagementManagement #Purple
+participant Welcome #Red
+participant CatalogManagement #Black
+Participant RecommendationManagement #DarkGrey
+Participant CPQManagement #Black
+
+
+== Catalog browsing & technical eligibility creation - step 1 ==
+
+person -> EngagementManagement: select a category
+
+alt catalog browsing
+    note over Welcome: Alternatively following API could be used
+    EngagementManagement -> CatalogManagement: TMF 620 GET productOffering (Category=x&SaleChannel=..)
+    activate CatalogManagement
+    activate EngagementManagement
+    CatalogManagement --> EngagementManagement: 200 list of productOffering
+    deactivate CatalogManagement
+    deactivate EngagementManagement
+else eligible catalog browsing
+    EngagementManagement -> CPQManagement: TMF 679 POST queryProductOfferingQualification (Category=x&commercial criteria)
+    activate CPQManagement
+    activate EngagementManagement
+    CPQManagement --> EngagementManagement: 200 list of eligible productOffering\nNo resource created
+    deactivate CPQManagement
+    deactivate EngagementManagement
+else product recommendations (SoI)
+    EngagementManagement -> RecommendationManagement: TMF 680 POST queryProductRecommendation (Category=x&SaleChannel=..)
+    activate RecommendationManagement
+    activate EngagementManagement
+    RecommendationManagement --> EngagementManagement: 200 list of recommended product
+    deactivate RecommendationManagement
+    deactivate EngagementManagement
+end
+
+note over Welcome: Catalog provided information about technical eligibility check requirement
+
+EngagementManagement -> EngagementManagement: display productOffering + check eligibility box (if required)
+@enduml
+
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+@startuml
+skinparam ParticipantFontColor automatic
+Title: Catalog browsing & technical eligibility creation
+autonumber 16
+actor person
+participant EngagementManagement #Purple
+participant Welcome #Red
+participant CatalogManagement #Black
+Participant TechnicalEligibility #Navy
+
+== Catalog browsing & technical eligibility creation - step 2 ==
+
+person -> EngagementManagement: provide address or phoneNumber for eligibility
+EngagementManagement -> TechnicalEligibility : TMF645 POST checkServiceQualification (productOffering.ProductSpec.CFSSpec(s), phone number or address)
+activate TechnicalEligibility
+activate EngagementManagement
+TechnicalEligibility --> EngagementManagement: 200 Eligibility result\nNo resource created
+deactivate TechnicalEligibility
+deactivate EngagementManagement
+EngagementManagement -> EngagementManagement: display eligibility result
+person -> EngagementManagement: select an offer
+EngagementManagement -> Welcome:  TMF701 PATCH SessionId, processId3, taskId2, nextAction: start order
+activate Welcome
+@enduml

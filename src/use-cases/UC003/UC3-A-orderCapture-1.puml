@@ -1,0 +1,51 @@
+@startuml
+
+autonumber
+skinparam ParticipantFontColor automatic
+
+actor Customer
+participant "EngagementManagement \nWeb UI" as UI #Purple
+participant "EngagementManagement \nBFF" as BFF #Purple
+participant "Shopping Cart \nComponent" as ShC #Black   
+participant "Service Qualification \nComponent" as SQ #MediumBlue
+participant "Product Offering Qualification \nComponent" as POQ #Black 
+participant "Product Catalog Management \nComponent" as PCM #Black
+participant "Product Ordering \nComponent" as PO #Black
+participant "Party Management \nComponent" as PtyM #Red
+participant "Customer Management \nComponent" as CM #Red
+participant "Account Management \nComponent" as AM #Red
+
+== Cart configuraton ==
+
+    UI -> BFF: get Product Configuration (shoppingCartId)
+        activate BFF
+        BFF -> ShC: <font color=blue>TMF663 GET /shoppingCart </font> (shoppingCartId)    
+        activate ShC
+        ShC --> BFF: Shopping Cart
+        deactivate ShC
+        note over BFF: Get Device and Option offers compatible with selected Fiber Contract 1
+        BFF -> POQ: <font color=blue>TMF679 POST /productOfferingQualification</font> (offerId, partyId, context, category='Device+Option')
+        activate POQ
+        POQ --> BFF: List of Product Offers
+        deactivate POQ
+        BFF -> PCM: <font color=blue>TMF620 GET /productOffering</font> (offers)
+        activate PCM
+        PCM --> BFF: List of Product Offers with details
+        deactivate PCM
+        note over BFF: Group offers according to categories Devices (Boxes) and Options (TVs)
+        BFF -> BFF: create Product Configuration
+    BFF --> UI: Product Configuration
+    deactivate BFF
+UI --> Customer: show add-ons selection page
+note over Customer #000001C: <img addons_selection.png> 
+deactivate UI  
+
+loop
+    Customer -> UI: select an item
+    activate UI
+        UI -> UI: use Product Configuration \nto activate/deactivate other items
+        UI --> Customer: update add-ons selection page    
+    deactivate UI
+end
+
+@enduml

@@ -1,0 +1,74 @@
+# Theme extension for TMF API document
+extends: default
+font:
+  catalog:
+    merge: true # (1)
+    Georgia:
+      normal: Georgia_Regular.ttf
+      italic: Georgia_Italic.ttf
+      bold: Georgia_Bold.ttf
+      bold_italic: Georgia_Bold_Italic.ttf
+    Calibri:
+      normal: Calibri_Regular.ttf
+      italic: Calibri_Italic.ttf
+      bold: Calibri_Bold.ttf
+      bold_italic: Calibri_Bold_Italic.ttf
+base:
+  font:
+     family: Calibri
+     size: 11
+page:
+  margin: [1in, 1in, 0.75in, 1in]
+  size: Letter
+title-page:
+  align: left
+  logo:
+    image: image:images/tmforum-logo.png[width=250]
+    align: right
+  revision:
+    display: yes
+  authors:
+    content: 'authors'
+heading:
+  h2:
+    font:
+      family: Georgia
+      color: #E0121D # TM Forum red
+      size: 20
+  h3:
+    font:
+      size: 14
+  h4:
+    font:
+      color: #E0121D # TM Forum red
+      size: 12
+  h5:
+    font:
+      size: 11
+  h6:
+    font:
+      color: #E0121D # TM Forum red
+      size: 11
+header:
+  height: $base_line_height_length * 5
+  recto:
+    left:
+      content: '{document-title}'
+    right:
+      content: image:images/tmforum-logo.png[width=150]
+  verso:
+    left:
+      content: $header_recto_left_content
+    right:
+      content: $header_recto_right_content
+footer:
+  recto:
+    left:
+      content: '©2021 TM Forum. All rights reserved.'
+    right:
+      content: 'Page {page-number}'
+  verso:
+    left:
+      content: $footer_recto_left_content
+    right:
+      content: $footer_recto_right_content

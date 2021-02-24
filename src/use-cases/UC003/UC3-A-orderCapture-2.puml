@@ -1,0 +1,51 @@
+@startuml
+
+autonumber
+skinparam ParticipantFontColor automatic
+
+actor Customer
+participant "EngagementManagement \nWeb UI" as UI #Purple
+participant "EngagementManagement \nBFF" as BFF #Purple
+participant "Shopping Cart \nComponent" as ShC #Black   
+participant "Service Qualification \nComponent" as SQ #MediumBlue
+participant "Product Offering Qualification \nComponent" as POQ #Black 
+participant "Product Catalog Management \nComponent" as PCM #Black
+participant "Product Ordering \nComponent" as PO #Black
+participant "Party Management \nComponent" as PtyM #Red
+participant "Customer Management \nComponent" as CM #Red
+participant "Account Management \nComponent" as AM #Red
+
+
+== Cart configuraton ==
+note over Customer #000001C: <img next_step.png> 
+Customer -> UI: press "Next step"
+    activate UI
+    UI -> BFF: update Shopping Cart (shoppingCartId, items)
+        activate BFF
+        BFF -> ShC: <font color=blue>TMF663 PATCH /shoppingCart</font> (shoppingCartId, items)
+            note over ShC: For each selected offer get related service and validate service eligibility
+            loop for each related service
+                ShC -> SQ: <font color=blue>TMF645 POST /serviceQualification </font> (serviceSpecId, address)
+                activate SQ
+                SQ --> ShC: 201 Service eligible for the specified address
+                deactivate SQ
+            end    
+            note over ShC: Check that selected offers are eligible and compatible between each other\nbefore placing them into the Shopping Cart
+            ShC -> POQ: <font color=blue>TMF679 POST /productOfferingQualification</font> (offers, partyId, context)
+                activate POQ
+                POQ --> ShC: List of eligible Product Offers
+                deactivate POQ
+            ShC -> ShC: validate
+            ShC -> ShC: update Shopping Cart
+        ShC --> BFF: 200 Shopping Cart
+        BFF -> ShC: <font color=blue>TMF663 GET /shoppingCart </font> (shoppingCartId)
+        activate ShC
+        ShC --> BFF: 200 Shopping Cart
+        deactivate ShC    
+    BFF --> UI: Shopping Cart
+    deactivate BFF
+UI --> Customer: show Your Cart
+deactivate UI
+note over Customer #000001C: <img your_cart.png>   
+
+@enduml

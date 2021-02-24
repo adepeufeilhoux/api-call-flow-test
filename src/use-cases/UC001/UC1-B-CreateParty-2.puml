@@ -1,0 +1,43 @@
+@startuml
+skinparam ParticipantFontColor automatic
+Title: Party "Party creation -  Step 2" creation
+autonumber 12
+actor person
+participant EngagementManagement #Purple
+participant Welcome #Red
+participant PartyManagement #Red
+participant IdentityManagement #Red
+participant EventBroker 
+== Creation of initialized Party (part II) ==
+EngagementManagement->PartyManagement: //TMF701 PATCH SessionId, ProcessId2, TaskId2, firstName, lastName, contactMethod//
+activate EngagementManagement
+Activate PartyManagement
+PartyManagement->PartyManagement: check data
+PartyManagement->PartyManagement: TMF632 POST/individual \nwith role prospect and contact method
+PartyManagement --> EngagementManagement: 200 task information required, SessionId, ProcessId2, TaskId3, \n?login/pwd creation request (security level compliance for pwd)
+deactivate EngagementManagement
+
+EngagementManagement -> EngagementManagement: Display required information
+person -> EngagementManagement:Enter required information
+EngagementManagement->PartyManagement: TMF701 PATCH SessionId, ProcessId2, TaskId3, login/password
+
+activate EngagementManagement
+PartyManagement -> IdentityManagement: TMFXXX POST electronic identity for PartyId
+Note right of PartyManagement: New API need to be discussed\nwith API work group.
+activate IdentityManagement
+IdentityManagement -> IdentityManagement : checkData
+IdentityManagement --> PartyManagement: 201 - OK - electonic identity created
+deactivate IdentityManagement
+PartyManagement->PartyManagement: TMF632 PATCH/individual \nAdding Identity management information
+
+PartyManagement -> Welcome: TMF701 POST  SessionId, Welcome process, party.id
+Activate Welcome
+Welcome --> PartyManagement: ProcessId3, TaskId1, task information required, \navailable actions: Disconnect, Start Order, Browse B2C Catalogue, Read News
+PartyManagement --> EngagementManagement: 200 - Party id succesfull, ProcessId3, TaskId1, task information required, \navailable actions: Disconnect, Start Order, Browse B2C Catalogue, Read News
+deactivate EngagementManagement
+PartyManagement -> EventBroker: TMF688 POST Event partycreation SessionId, PartyId
+
+deactivate PartyManagement
+
+@enduml
+

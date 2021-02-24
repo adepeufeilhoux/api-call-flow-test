@@ -1,0 +1,45 @@
+@startuml legal tutor sees products of protected adult
+
+skinparam ParticipantFontColor automatic
+autonumber
+
+actor Tutor 
+
+participant CustomerCenter #Purple
+participant PartyManagement #Red
+participant CustomerManagement #Black
+participant ProductInventoryManagement #Black
+participant IdentityAccessManagement #Gray
+
+
+Tutor -> CustomerCenter : launch customer center
+activate CustomerCenter
+
+CustomerCenter -> PartyManagement ++: GET /partTyrole?engagedParty.id={TUTOR}&partyRoleSpec.name=Tutor
+note right : need extension of PartyRole with a reference to a PartyRoleSpecification
+return List of PartyRole (of type Tutor)
+
+loop over all PartyRole
+  
+  CustomerCenter -> CustomerManagement ++: GET /customer?engagedParty.id={PartyRole.relatedParty.id}
+  return Customer object
+
+  CustomerCenter -> ProductInventoryManagement : id_token=(Userinfo) \nGET /product?relatedParty.role="Customer"&relatedParty.id={Customer.id}
+  activate ProductInventoryManagement
+  ProductInventoryManagement -> IdentityAccessManagement ++: GET /permission?user.id={Userinfo.id}&assetUserRole.userRole.id=ProductManager
+  return List of AssetUserRole
+  note right
+    the PIM has only the information it gets out of the id_token
+    according to the model that should be a Party.id or PartyRole.id
+  end note
+  note left
+    PIM checks that the TUTOR has the Entitlements to see 
+    the Product of the protected adult (Custommer.id)
+  end note
+
+  return List of Product
+end
+
+return List of Product
+
+@enduml

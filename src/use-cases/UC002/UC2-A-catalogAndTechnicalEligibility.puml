@@ -1,0 +1,67 @@
+@startuml
+
+actor Customer
+skinparam ParticipantFontColor automatic
+
+autonumber
+
+participant "EngagementManagement \nWeb UI" as EngagementManagementUI #Purple
+participant "EngagementManagement \nBFF" as EngagementManagementBFF #Purple
+
+Customer -> EngagementManagementUI: select a line
+activate EngagementManagementUI
+    EngagementManagementUI -> EngagementManagementBFF: select a line
+    activate EngagementManagementBFF
+
+participant "Product Catalog Management \nComponent" as PCM #Black
+
+        EngagementManagementBFF -> PCM: <font color=blue>TMF620 GET /category
+        activate PCM
+        PCM --> EngagementManagementBFF: list of categories
+        deactivate PCM
+    EngagementManagementBFF --> EngagementManagementUI:  list of categories
+    deactivate EngagementManagementBFF
+EngagementManagementUI --> Customer: present available categories
+deactivate EngagementManagementUI
+
+Customer -> EngagementManagementUI: select category, enter address data
+activate EngagementManagementUI
+    EngagementManagementUI -> EngagementManagementBFF: category, address
+    activate EngagementManagementBFF
+    EngagementManagementBFF -> EngagementManagementBFF: validate input data
+    activate EngagementManagementBFF
+    deactivate EngagementManagementBFF
+
+
+participant "Service Qualification \nComponent" as SQ #MediumBlue
+
+        EngagementManagementBFF -> SQ: <font color=blue>TMF 645 POST /serviceQualification </font> address, fiber service spec
+        activate SQ
+        SQ --> EngagementManagementBFF: service eligibility for the specified address
+        deactivate SQ
+
+participant "Product Offering Qualification \nComponent" as POQ #Black
+participant "Product Catalog Management \nComponent" as PCM #99FF99
+
+        EngagementManagementBFF -> POQ:  <font color=blue>TMF679 POST /productOfferingQualification </font> by category, address, and channel
+        activate POQ
+            POQ -> POQ: load offers
+            activate POQ
+            deactivate POQ
+
+            POQ -> PCM: <font color=blue> TMF620 GET /productOffering </font> by offer IDs
+            activate PCM
+            POQ <-- PCM
+            deactivate PCM
+
+                POQ -> POQ: filter by category
+                activate POQ
+                deactivate POQ
+
+            POQ --> EngagementManagementBFF: eligible product offers
+            deactivate POQ
+    EngagementManagementBFF --> EngagementManagementUI: eligible product offers
+    deactivate EngagementManagementBFF
+EngagementManagementUI --> Customer: present product offers
+deactivate EngagementManagementUI
+@enduml

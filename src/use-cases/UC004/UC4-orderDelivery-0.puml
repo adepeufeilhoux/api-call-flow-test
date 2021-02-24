@@ -1,0 +1,44 @@
+
+@startuml
+skinparam ParticipantFontColor automatic
+Title: Customer order delivery - high level view
+autonumber 
+participant CustomerOrderCapture #Black
+participant CustomerOrderDelivery #Black
+participant ProductCatalog #Black
+participant EventBus #Grey
+participant CustomerOrderFollowUp #Black
+database ProductOrder
+database Installedbase
+
+== Order Delivery step 1==
+CustomerOrderCapture -> EventBus: POST Event processOrderCaptureCompleted\n(Order validated + productOrderId) [688]
+EventBus --> CustomerOrderDelivery: POST listement/processOrderCaptureCompleted\n(Order validated + productOrderId)
+CustomerOrderDelivery --> CustomerOrderDelivery: POST ProcessFlow (PFSpec=CustomerOrderDelivery + productOrderId) [701]
+activate CustomerOrderDelivery
+EventBus --> CustomerOrderFollowUp: POST /listener/processOrderCaptureCompleted\n(processId + productOrderId)
+
+CustomerOrderDelivery --> ProductOrder : GET ProductOrder{id} [622]
+ProductOrder -> CustomerOrderDelivery: 200 -ProductOrder representation
+CustomerOrderDelivery --> CustomerOrderDelivery: initiate delivery graph
+
+loop compute ProductOrder delivery flow till item to be delivered
+CustomerOrderDelivery --> CustomerOrderDelivery: Identify productSpec(s) to be managed
+group Retrieve catalog information for product to be fullfilled
+CustomerOrderDelivery --> ProductCatalog : GET /Productspecification{id} [620]
+activate ProductCatalog
+ProductCatalog -> CustomerOrderDelivery: ProductSpecification information (support CFS / Stock Item)
+deactivate ProductCatalog
+end
+Note right of CustomerOrderDelivery : UC did not feature existing assets modification - Inventory API not used
+Group Manage delivery depending on type of productSpec
+Note Right of CustomerOrderDelivery: Flow for the UC to be describe\n - for service based see CFS-Based delivery \n - for goods see stock based delivery
+end
+CustomerOrderDelivery --> CustomerOrderDelivery: update delivery graph
+end
+Group Order delivery completed 
+Note Right of CustomerOrderDelivery: Flow for order follow up in described in another diagram
+deactivate CustomerOrderDelivery
+
+@enduml
+

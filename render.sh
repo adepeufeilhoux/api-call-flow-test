@@ -78,15 +78,18 @@ render_html()
 {
 	asciidoctor -r asciidoctor-diagram \
 		-a toc=left \
-		-D out/html \
+		-D ${HTML_OUT} \
 		${ROOT_ADOC}
 
 	if [ ! -d ${HTML_OUT}/images ]
 	then
 		mkdir -p ${HTML_OUT}/images
 	fi
+	
 	copy_images png
 	copy_images jpg
+	
+	mv ${HTML_OUT}/IG1228.html ${HTML_OUT}/index.html
 }
 
 

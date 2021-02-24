@@ -90,6 +90,7 @@ render_html()
 	copy_images jpg
 	
 	mv ${HTML_OUT}/IG1228.html ${HTML_OUT}/index.html
+	chmod +x ${HTML_OUT}/index.html
 }
 
 
